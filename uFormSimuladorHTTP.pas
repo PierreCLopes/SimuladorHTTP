@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Generics.Collections, System.DateUtils, StrUtils,
-  System.JSON;
+  System.JSON, IdHashMessageDigest;
 
 type
   TProduto = record
@@ -16,6 +16,7 @@ type
   Constante = record
     Const
       URL = 'https://api.com/produto';
+      Host = 'https://api.com';
   end;
 
   TForm1 = class(TForm)
@@ -33,22 +34,30 @@ type
     Key: TEdit;
     LHeader: TLabel;
     LKey: TLabel;
-    Edit1: TEdit;
+    Value: TEdit;
     LValue: TLabel;
     procedure ExecutarClick(Sender: TObject);
   private
     Produto: TDictionary<Integer,TProduto>;
 
+    function GetEndPoint(): String;
+    function GetHost(): String;
     function GetUTC(const prDate: TDateTime): String;
-    function GetJsonProduto(): String;
+    function GetJsonProduto(prID: Integer): String;
+    function GetJsonBadRequest(): String;
+    function GetJsonMethodNotAllowed(): String;
+    function GetJsonNotFound(): String;
+    function GetJsonUnauthorized(): String;
+    function GetHash(): String;
 
-    procedure CadastrarProduto(); 
-    procedure DeletarProduto();
-    procedure MetodoNaoSuportado();
-    procedure ResponseGet();
-    procedure RequestGet();
-    procedure ResponsePost();
-    procedure RequestPost();
+    procedure RequestExecute();
+    procedure ResponseExecute();
+    procedure CadastrarProduto();
+    procedure DeletarProduto(var prResponse: String);
+    procedure ResponseBadRequest();
+    procedure ResponseNotFound();
+    procedure ResponseUnauthorized;
+    procedure ResponseError;
   public
     constructor Create(AOwner: TComponent); override;
   end;
@@ -70,16 +79,19 @@ var
   vProduto: TProduto;
 begin
   vID := 0;
-  
-  vJson := TJSONObject.ParseJSONValue( Body.Text) as TJSONObject;
+  try
+    vJson := TJSONObject.ParseJSONValue( Body.Text) as TJSONObject;
 
-  for vKey in Produto.Keys do
-    if vKey > vID then
-      vID := vKey; 
+    for vKey in Produto.Keys do
+      if vKey > vID then
+        vID := vKey;
 
-  vProduto.Nome := vJson.GetValue('nome').Value;
-  vProduto.Valor := StrToCurr(vJson.GetValue('valor').Value);  
-  Produto.Add(vID + 1, vProduto);
+    vProduto.Nome := vJson.GetValue('nome').Value;
+    vProduto.Valor := StrToCurr(vJson.GetValue('valor').Value);
+    Produto.Add(vID + 1, vProduto);
+  except
+    ResponseBadRequest();
+  end;
 end;
 
 constructor TForm1.Create(AOwner: TComponent);
@@ -99,53 +111,191 @@ begin
   vProduto.Nome := 'Produto teste';
   vProduto.Valor := 200.35;
   Produto.Add(2, vProduto);
+
+  Key.Text := 'Token';
+  Value.Text := '123456789';
+
+  URL.Text := Constante.URL;
 end;
 
-procedure TForm1.DeletarProduto;
+procedure TForm1.DeletarProduto(var prResponse: String);
+var
+  vJson: TJSONObject;
 begin
-
+  try
+    vJson := TJSONObject.ParseJSONValue(Body.Text) as TJSONObject;
+    prResponse := prResponse + '{' + sLineBreak;
+    prResponse := prResponse + '  "ID": ' + IntToStr(StrToInt(vJson.GetValue('id').Value)) + ',' + sLineBreak;
+    prResponse := prResponse + '  "nome": "' + Produto.Items[StrToInt(vJson.GetValue('id').Value)].Nome + '",' + sLineBreak;
+    prResponse := prResponse + '  "valor": "' + CurrToStr(Produto.Items[StrToInt(vJson.GetValue('id').Value)].Valor) + '",' + sLineBreak;
+    prResponse := prResponse + '  "mensagem": "Produto deletado com sucesso"' + sLineBreak;
+    prResponse := prResponse + '}' + sLineBreak;
+    Produto.Remove(StrToInt(vJson.GetValue('id').Value));
+  except
+    ResponseBadRequest();
+  end;
 end;
 
 procedure TForm1.ExecutarClick(Sender: TObject);
 begin
-  if URL.Text = Constante.URL then
+  if URL.Text = '' then
   begin
-    if Metodo.Text = 'GET' then
+    ShowMessage('URL deve ser informada!');
+    URL.SetFocus;
+  end
+  else
+  if Metodo.Text = '' then
+  begin
+    ShowMessage('Método deve ser informado!');
+    Metodo.SetFocus;
+  end
+  else
+  begin
+    Response.Clear;
+    Request.Clear;
+
+    if URL.Text = Constante.URL then
     begin
-      ResponseGet();
-      RequestGet();
+      RequestExecute;
+      if (UpperCase(Key.Text) = 'TOKEN') and (Value.Text = '123456789') then
+        ResponseExecute
+      else
+        ResponseUnauthorized;
     end
     else
-      if Metodo.Text = 'POST' then
-        CadastrarProduto()
+    if Pos(Constante.Host,URL.Text) > 0 then
+    begin
+      RequestExecute;
+      ResponseNotFound;
+    end
     else
-      if Metodo.Text = 'DELETE' then
-        DeletarProduto()
-    else
-      MetodoNaoSuportado();
+    begin
+      RequestExecute;
+      ResponseError;
+    end;
   end;
 
 end;
 
-function TForm1.GetJsonProduto: String;
+function TForm1.GetEndPoint: String;
+var
+  vResult: String;
+begin
+  vResult := URL.Text;
+  vResult := StringReplace(vResult,'https','',[rfReplaceAll, rfIgnoreCase]);
+  vResult := StringReplace(vResult,'http','',[rfReplaceAll, rfIgnoreCase]);
+  vResult := StringReplace(vResult,'://','',[rfReplaceAll, rfIgnoreCase]);
+  vResult := vResult.Substring(Pos('/',vResult)-1, Length(vResult));
+
+  Result := vResult;
+end;
+
+function TForm1.GetHash: String;
+var
+  vHash: TIdHashMessageDigest5;
+begin
+  vHash := TIdHashMessageDigest5.Create;
+  Result := vHash.HashStringAsHex('Simulador HTTP');
+end;
+
+function TForm1.GetHost: String;
+var
+  vResult: String;
+begin
+  vResult := URL.Text;
+  vResult := StringReplace(vResult,'https','',[rfReplaceAll, rfIgnoreCase]);
+  vResult := StringReplace(vResult,'http','',[rfReplaceAll, rfIgnoreCase]);
+  vResult := StringReplace(vResult,'://','',[rfReplaceAll, rfIgnoreCase]);
+  if Pos('/',vResult) > 0 then
+    vResult := vResult.Substring(0, Pos('/',vResult)-1);
+
+  Result := vResult;
+end;
+
+function TForm1.GetJsonBadRequest: String;
+var
+  vResult: String;
+begin
+  vResult := '{' + sLineBreak;
+  vResult := vResult + '  "status": 400,' + sLineBreak;
+  vResult := vResult + '  "code": "JsonInvalido",' + sLineBreak;
+  vResult := vResult + '  "mensagem": "Json inválido para o processo desejado."' + sLineBreak;
+  vResult := vResult + '}';
+
+  Result := vResult;
+end;
+
+function TForm1.GetJsonMethodNotAllowed: String;
+var
+  vResult: String;
+begin
+  vResult := '{' + sLineBreak;
+  vResult := vResult + '  "status": 405,' + sLineBreak;
+  vResult := vResult + '  "code": "MetodoNaoSuportado",' + sLineBreak;
+  vResult := vResult + '  "mensagem": "Método não suportado."' + sLineBreak;
+  vResult := vResult + '}';
+
+  Result := vResult;
+end;
+
+function TForm1.GetJsonNotFound: String;
+var
+  vResult: String;
+begin
+  vResult := '{' + sLineBreak;
+  vResult := vResult + '  "status": 404,' + sLineBreak;
+  vResult := vResult + '  "code": "NaoEncontrado",' + sLineBreak;
+  vResult := vResult + '  "mensagem": "Recurso não encontrado."' + sLineBreak;
+  vResult := vResult + '}';
+
+  Result := vResult;
+end;
+
+function TForm1.GetJsonProduto(prID: Integer): String;
 var
   vKey: Integer;
   vCount: Integer;
   vResult: String;
 begin
-  vResult := '[' + sLineBreak;
-  for vKey in Produto.Keys do
+  vCount := 0;
+  if prID = 0 then
   begin
-    Inc(vCount);
-    vResult := vResult + '  {' + sLineBreak;
-    vResult := vResult + '    "nome": "' + Produto.Items[vKey].Nome + '"' + sLineBreak;
-    vResult := vResult + '    "valor": "' + CurrToStr(Produto.Items[vKey].Valor) + '"' + sLineBreak;
-    if Produto.Count = vCount then
-      vResult := vResult + '  }' + sLineBreak
-    else
-      vResult := vResult + '  },' + sLineBreak;
+    vResult := '[' + sLineBreak;
+    for vKey in Produto.Keys do
+    begin
+      Inc(vCount);
+      vResult := vResult + '  {' + sLineBreak;
+      vResult := vResult + '    "ID": ' + IntTOStr(vKey) + ',' + sLineBreak;
+      vResult := vResult + '    "nome": "' + Produto.Items[vKey].Nome + '",' + sLineBreak;
+      vResult := vResult + '    "valor": "' + CurrToStr(Produto.Items[vKey].Valor) + '"' + sLineBreak;
+      if Produto.Count = vCount then
+        vResult := vResult + '  }' + sLineBreak
+      else
+        vResult := vResult + '  },' + sLineBreak;
+    end;
+    vResult := vResult + ']';
+  end
+  else
+  begin
+    vResult := vResult + '{' + sLineBreak;
+    vResult := vResult + '  "ID": ' + IntToStr(prID) + ',' + sLineBreak;
+    vResult := vResult + '  "nome": "' + Produto.Items[prID].Nome + '",' + sLineBreak;
+    vResult := vResult + '  "valor": "' + CurrToStr(Produto.Items[prID].Valor) + '"' + sLineBreak;
+    vResult := vResult + '}' + sLineBreak
   end;
-  vResult := vResult + ']';
+
+  Result := vResult;
+end;
+
+function TForm1.GetJsonUnauthorized: String;
+var
+  vResult: String;
+begin
+  vResult := '{' + sLineBreak;
+  vResult := vResult + '  "status": 401,' + sLineBreak;
+  vResult := vResult + '  "code": "NaoAutorizado",' + sLineBreak;
+  vResult := vResult + '  "mensagem": "Token não encontrado ou inválido."' + sLineBreak;
+  vResult := vResult + '}';
 
   Result := vResult;
 end;
@@ -189,33 +339,39 @@ begin
   Result := vResult;   
 end;
 
-
-procedure TForm1.MetodoNaoSuportado;
+procedure TForm1.RequestExecute;
+var
+  vRequest: String;
 begin
+  vRequest := Metodo.Text + ' ' + GetEndPoint + ' HTTP/1.1' + sLineBreak;
+  vRequest := vRequest + 'User-Agent: Simulador HTTP 1.0' + sLineBreak;
+  vRequest := vRequest + 'Simulador-Token: ' + GetHash + sLineBreak;
+  vRequest := vRequest + 'Accept-Encoding: gzip, deflate, br' + sLineBreak;
+  vRequest := vRequest + 'Connection: keep-alive' + sLineBreak;
+  vRequest := vRequest + 'Host: ' + GetHost + sLineBreak;
+  if (Key.Text <> '') and (Value.Text <> '')then
+    vRequest := vRequest + Key.Text + ': ' + Value.Text + sLineBreak;
+  if Body.Text <> '' then
+  begin
+    vRequest := vRequest + 'Content-Type: application/json; charset=utf-8' + sLineBreak;
+    vRequest := vRequest + 'Content-Length: ' + IntToStr(Length(StringReplace(Body.Text,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak;
+    vRequest := vRequest + Body.Text;
+  end;
 
+  Request.Text := vRequest;
 end;
 
-procedure TForm1.RequestGet;
-begin
-
-end;
-
-procedure TForm1.RequestPost;
-begin
-
-end;
-
-procedure TForm1.ResponseGet;
+procedure TForm1.ResponseBadRequest;
 var
   vResponse: String;
   vJson: String;
 begin
-  vJson := GetJsonProduto();
-  
-  vResponse := vResponse + 'HTTP/1.1 200 OK' + sLineBreak;
+  vJson := GetJsonBadRequest();;
+
+  vResponse := vResponse + 'HTTP/1.1 400 Bad Request' + sLineBreak;
   vResponse := vResponse + 'Date: ' + GetUTC(Now) + sLineBreak;
   vResponse := vResponse + 'Content-Type: application/json; charset=utf-8' + sLineBreak;
-  vResponse := vResponse + 'Content-Length: ' + IntToStr(Length(vJson)) + sLineBreak;
+  vResponse := vResponse + 'Content-Length: ' +IntToStr(Length(StringReplace(vJson,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak;
   vResponse := vResponse + 'Connection: keep-alive' + sLineBreak;
   vResponse := vResponse + 'Vary: Accept-Encoding' + sLineBreak;
   vResponse := vResponse + 'Content-Encoding: br' + sLineBreak;
@@ -224,9 +380,119 @@ begin
   Response.Text := vResponse;
 end;
 
-procedure TForm1.ResponsePost;
+procedure TForm1.ResponseError;
 begin
+  Response.Text := 'Error: getaddrinfo ENOTFOUND ' + GetHost;
+end;
 
+procedure TForm1.ResponseExecute;
+var
+  vResponse: String;
+  vJson: String;
+  vID: Integer;
+begin
+  if Metodo.Text = 'GET' then
+  begin
+    vJson := GetJsonProduto(0);
+
+    vResponse := vResponse + 'HTTP/1.1 200 OK' + sLineBreak;
+    vResponse := vResponse + 'Date: ' + GetUTC(Now) + sLineBreak;
+    vResponse := vResponse + 'Content-Type: application/json; charset=utf-8' + sLineBreak;
+    vResponse := vResponse + 'Content-Length: ' + IntToStr(Length(StringReplace(vJson,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak;
+    vResponse := vResponse + 'Connection: keep-alive' + sLineBreak;
+    vResponse := vResponse + 'Vary: Accept-Encoding' + sLineBreak;
+    vResponse := vResponse + 'Content-Encoding: br' + sLineBreak;
+    vResponse := vResponse + sLineBreak + vJson;
+  end
+  else
+  if Metodo.Text = 'POST' then
+  begin
+    CadastrarProduto();
+
+    if Response.Text = '' then
+    begin
+      vJson := GetJsonProduto(Produto.Count);
+
+      vResponse := vResponse + 'HTTP/1.1 200 OK' + sLineBreak;
+      vResponse := vResponse + 'Date: ' + GetUTC(Now) + sLineBreak;
+      vResponse := vResponse + 'Content-Type: application/json; charset=utf-8' + sLineBreak;
+      vResponse := vResponse + 'Content-Length: ' + IntToStr(Length(StringReplace(vJson,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak;
+      vResponse := vResponse + 'Connection: keep-alive' + sLineBreak;
+      vResponse := vResponse + 'Vary: Accept-Encoding' + sLineBreak;
+      vResponse := vResponse + 'Content-Encoding: br' + sLineBreak;
+      vResponse := vResponse + sLineBreak + vJson;
+    end;
+  end
+  else
+  if Metodo.Text = 'DELETE' then
+  begin
+    DeletarProduto(vJson);
+
+    if Response.Text = '' then
+    begin
+      vResponse := vResponse + 'HTTP/1.1 200 OK' + sLineBreak;
+      vResponse := vResponse + 'Date: ' + GetUTC(Now) + sLineBreak;
+      vResponse := vResponse + 'Content-Type: application/json; charset=utf-8' + sLineBreak;
+      vResponse := vResponse + 'Content-Length: ' + IntToStr(Length(StringReplace(vJson,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak;
+      vResponse := vResponse + 'Connection: keep-alive' + sLineBreak;
+      vResponse := vResponse + 'Vary: Accept-Encoding' + sLineBreak;
+      vResponse := vResponse + 'Content-Encoding: br' + sLineBreak;
+      vResponse := vResponse + sLineBreak + vJson;
+    end;
+  end
+  else
+  begin
+    vJson := GetJsonMethodNotAllowed();
+    vResponse := vResponse + 'HTTP/1.1 405 Method Not Allowed' + sLineBreak;
+    vResponse := vResponse + 'Date: ' + GetUTC(Now) + sLineBreak;
+    vResponse := vResponse + 'Content-Type: application/json; charset=utf-8' + sLineBreak;
+    vResponse := vResponse + 'Content-Length: ' + IntToStr(Length(StringReplace(vJson,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak;
+    vResponse := vResponse + 'Connection: keep-alive' + sLineBreak;
+    vResponse := vResponse + 'Vary: Accept-Encoding' + sLineBreak;
+    vResponse := vResponse + 'Content-Encoding: br' + sLineBreak;
+    vResponse := vResponse + sLineBreak + vJson;
+  end;
+
+  if vResponse <> '' then
+    Response.Text := vResponse;
+end;
+
+procedure TForm1.ResponseNotFound;
+var
+  vResponse: String;
+  vJson: String;
+begin
+  vJson := GetJsonNotFound();
+
+  vResponse := vResponse + 'HTTP/1.1 404 Not Found' + sLineBreak;
+  vResponse := vResponse + 'Date: ' + GetUTC(Now) + sLineBreak;
+  vResponse := vResponse + 'Content-Type: application/json; charset=utf-8' + sLineBreak;
+  vResponse := vResponse + 'Content-Length: ' + IntToStr(Length(StringReplace(vJson,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak;
+  vResponse := vResponse + 'Connection: keep-alive' + sLineBreak;
+  vResponse := vResponse + 'Vary: Accept-Encoding' + sLineBreak;
+  vResponse := vResponse + 'Content-Encoding: br' + sLineBreak;
+  vResponse := vResponse + sLineBreak + vJson;
+
+  Response.Text := vResponse;
+end;
+
+procedure TForm1.ResponseUnauthorized;
+var
+  vResponse: String;
+  vJson: String;
+begin
+  vJson := GetJsonUnauthorized();
+
+  vResponse := vResponse + 'HTTP/1.1 401 Unauthorized' + sLineBreak;
+  vResponse := vResponse + 'Date: ' + GetUTC(Now) + sLineBreak;
+  vResponse := vResponse + 'Content-Type: application/json; charset=utf-8' + sLineBreak;
+  vResponse := vResponse + 'Content-Length: ' + IntToStr(Length(StringReplace(vJson,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak;
+  vResponse := vResponse + 'Connection: keep-alive' + sLineBreak;
+  vResponse := vResponse + 'Vary: Accept-Encoding' + sLineBreak;
+  vResponse := vResponse + 'Content-Encoding: br' + sLineBreak;
+  vResponse := vResponse + sLineBreak + vJson;
+
+  Response.Text := vResponse;
 end;
 
 end.

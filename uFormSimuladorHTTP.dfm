@@ -1,9 +1,9 @@
 object Form1: TForm1
-  Left = 0
-  Top = 0
+  Left = 293
+  Top = 110
   Caption = 'Form1'
-  ClientHeight = 351
-  ClientWidth = 721
+  ClientHeight = 509
+  ClientWidth = 684
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,6 +11,7 @@ object Form1: TForm1
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  Position = poDesigned
   PixelsPerInch = 96
   TextHeight = 13
   object LMetodo: TLabel
@@ -29,42 +30,48 @@ object Form1: TForm1
   end
   object LBody: TLabel
     Left = 8
-    Top = 206
+    Top = 126
     Width = 24
     Height = 13
     Caption = 'Body'
   end
   object LRequest: TLabel
-    Left = 248
-    Top = 206
+    Left = 8
+    Top = 256
     Width = 40
     Height = 13
     Caption = 'Request'
   end
   object LResponse: TLabel
-    Left = 488
-    Top = 206
+    Left = 327
+    Top = 256
     Width = 47
     Height = 13
     Caption = 'Response'
   end
   object LHeader: TLabel
-    Left = 253
+    Left = 292
     Top = 54
-    Width = 35
-    Height = 13
+    Width = 61
+    Height = 23
     Caption = 'Header'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -19
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
   end
   object LKey: TLabel
     Left = 8
-    Top = 72
+    Top = 80
     Width = 18
     Height = 13
     Caption = 'Key'
   end
   object LValue: TLabel
-    Left = 278
-    Top = 72
+    Left = 327
+    Top = 80
     Width = 26
     Height = 13
     Caption = 'Value'
@@ -79,13 +86,13 @@ object Form1: TForm1
   object URL: TEdit
     Left = 63
     Top = 27
-    Width = 376
+    Width = 610
     Height = 21
     TabOrder = 1
   end
   object Executar: TButton
-    Left = 638
-    Top = 318
+    Left = 598
+    Top = 479
     Width = 75
     Height = 25
     Caption = 'Executar'
@@ -94,36 +101,43 @@ object Form1: TForm1
   end
   object Body: TMemo
     Left = 8
-    Top = 225
-    Width = 185
+    Top = 145
+    Width = 665
     Height = 89
+    ScrollBars = ssVertical
     TabOrder = 3
   end
   object Request: TMemo
-    Left = 248
-    Top = 224
-    Width = 185
-    Height = 89
+    Left = 8
+    Top = 275
+    Width = 313
+    Height = 198
+    ReadOnly = True
+    ScrollBars = ssVertical
     TabOrder = 4
   end
   object Response: TMemo
-    Left = 488
-    Top = 224
-    Width = 185
-    Height = 89
+    Left = 327
+    Top = 275
+    Width = 346
+    Height = 198
+    ReadOnly = True
+    ScrollBars = ssVertical
     TabOrder = 5
+    Touch.ParentTabletOptions = False
+    Touch.TabletOptions = [toPressAndHold, toPenTapFeedback, toPenBarrelFeedback, toTouchUIForceOn, toTouchUIForceOff, toTouchSwitch, toFlicks, toSmoothScrolling, toFlickFallbackKeys]
   end
   object Key: TEdit
     Left = 8
-    Top = 91
-    Width = 257
+    Top = 99
+    Width = 313
     Height = 21
     TabOrder = 6
   end
-  object Edit1: TEdit
-    Left = 278
-    Top = 91
-    Width = 257
+  object Value: TEdit
+    Left = 327
+    Top = 99
+    Width = 346
     Height = 21
     TabOrder = 7
   end
