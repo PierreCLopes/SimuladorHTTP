@@ -46,7 +46,7 @@ type
     function GetJsonProduto(prID: Integer): String;
     function GetJsonBadRequest(): String;
     function GetJsonMethodNotAllowed(): String;
-    function GetJsonNotFound(): String;
+    function GetJsonNotFound(const prMensagem: String): String;
     function GetJsonUnauthorized(): String;
     function GetHash(): String;
 
@@ -55,7 +55,7 @@ type
     procedure CadastrarProduto();
     procedure DeletarProduto(var prResponse: String);
     procedure ResponseBadRequest();
-    procedure ResponseNotFound();
+    procedure ResponseNotFound(const prMensagem: String);
     procedure ResponseUnauthorized;
     procedure ResponseError;
   public
@@ -121,9 +121,12 @@ end;
 procedure TForm1.DeletarProduto(var prResponse: String);
 var
   vJson: TJSONObject;
+  vID: Integer;
 begin
+  vID := 0;
   try
     vJson := TJSONObject.ParseJSONValue(Body.Text) as TJSONObject;
+    vID := StrToInt(vJson.GetValue('id').Value);
     prResponse := prResponse + '{' + sLineBreak;
     prResponse := prResponse + '  "ID": ' + IntToStr(StrToInt(vJson.GetValue('id').Value)) + ',' + sLineBreak;
     prResponse := prResponse + '  "nome": "' + Produto.Items[StrToInt(vJson.GetValue('id').Value)].Nome + '",' + sLineBreak;
@@ -132,7 +135,10 @@ begin
     prResponse := prResponse + '}' + sLineBreak;
     Produto.Remove(StrToInt(vJson.GetValue('id').Value));
   except
-    ResponseBadRequest();
+    if (not Produto.ContainsKey(vID)) and (vID <> 0) then
+      ResponseNotFound('Produto não encontrado.')
+    else
+      ResponseBadRequest();
   end;
 end;
 
@@ -166,7 +172,7 @@ begin
     if Pos(Constante.Host,URL.Text) > 0 then
     begin
       RequestExecute;
-      ResponseNotFound;
+      ResponseNotFound('Recurso não encontrado.');
     end
     else
     begin
@@ -238,14 +244,14 @@ begin
   Result := vResult;
 end;
 
-function TForm1.GetJsonNotFound: String;
+function TForm1.GetJsonNotFound(const prMensagem: String): String;
 var
   vResult: String;
 begin
   vResult := '{' + sLineBreak;
   vResult := vResult + '  "status": 404,' + sLineBreak;
   vResult := vResult + '  "code": "NaoEncontrado",' + sLineBreak;
-  vResult := vResult + '  "mensagem": "Recurso não encontrado."' + sLineBreak;
+  vResult := vResult + '  "mensagem": "' + prMensagem + '"' + sLineBreak;
   vResult := vResult + '}';
 
   Result := vResult;
@@ -389,7 +395,6 @@ procedure TForm1.ResponseExecute;
 var
   vResponse: String;
   vJson: String;
-  vID: Integer;
 begin
   if Metodo.Text = 'GET' then
   begin
@@ -457,12 +462,12 @@ begin
     Response.Text := vResponse;
 end;
 
-procedure TForm1.ResponseNotFound;
+procedure TForm1.ResponseNotFound(const prMensagem: String);
 var
   vResponse: String;
   vJson: String;
 begin
-  vJson := GetJsonNotFound();
+  vJson := GetJsonNotFound(prMensagem);
 
   vResponse := vResponse + 'HTTP/1.1 404 Not Found' + sLineBreak;
   vResponse := vResponse + 'Date: ' + GetUTC(Now) + sLineBreak;

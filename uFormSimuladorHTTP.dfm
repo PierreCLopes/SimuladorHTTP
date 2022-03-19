@@ -17,41 +17,71 @@ object Form1: TForm1
   object LMetodo: TLabel
     Left = 8
     Top = 8
-    Width = 36
-    Height = 13
+    Width = 42
+    Height = 16
     Caption = 'M'#233'todo'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
   end
   object LURL: TLabel
     Left = 63
     Top = 8
-    Width = 19
-    Height = 13
+    Width = 22
+    Height = 16
     Caption = 'URL'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
   end
   object LBody: TLabel
     Left = 8
     Top = 126
-    Width = 24
-    Height = 13
+    Width = 27
+    Height = 16
     Caption = 'Body'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
   end
   object LRequest: TLabel
     Left = 8
     Top = 256
-    Width = 40
-    Height = 13
+    Width = 46
+    Height = 16
     Caption = 'Request'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
   end
   object LResponse: TLabel
     Left = 327
     Top = 256
-    Width = 47
-    Height = 13
+    Width = 55
+    Height = 16
     Caption = 'Response'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
   end
   object LHeader: TLabel
-    Left = 292
-    Top = 54
+    Left = 298
+    Top = 57
     Width = 61
     Height = 23
     Caption = 'Header'
@@ -65,29 +95,53 @@ object Form1: TForm1
   object LKey: TLabel
     Left = 8
     Top = 80
-    Width = 18
-    Height = 13
+    Width = 20
+    Height = 16
     Caption = 'Key'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
   end
   object LValue: TLabel
     Left = 327
     Top = 80
-    Width = 26
-    Height = 13
+    Width = 32
+    Height = 16
     Caption = 'Value'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
   end
   object Metodo: TComboBox
     Left = 8
     Top = 27
     Width = 49
-    Height = 21
+    Height = 24
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
     TabOrder = 0
   end
   object URL: TEdit
     Left = 63
     Top = 27
     Width = 610
-    Height = 21
+    Height = 24
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
     TabOrder = 1
   end
   object Executar: TButton
@@ -104,6 +158,12 @@ object Form1: TForm1
     Top = 145
     Width = 665
     Height = 89
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 3
   end
@@ -112,6 +172,12 @@ object Form1: TForm1
     Top = 275
     Width = 313
     Height = 198
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
     ReadOnly = True
     ScrollBars = ssVertical
     TabOrder = 4
@@ -121,6 +187,12 @@ object Form1: TForm1
     Top = 275
     Width = 346
     Height = 198
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
     ReadOnly = True
     ScrollBars = ssVertical
     TabOrder = 5
@@ -131,14 +203,26 @@ object Form1: TForm1
     Left = 8
     Top = 99
     Width = 313
-    Height = 21
+    Height = 24
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
     TabOrder = 6
   end
   object Value: TEdit
     Left = 327
     Top = 99
     Width = 346
-    Height = 21
+    Height = 24
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
     TabOrder = 7
   end
 end
