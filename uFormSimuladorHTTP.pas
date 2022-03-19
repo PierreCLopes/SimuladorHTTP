@@ -37,6 +37,7 @@ type
     Value: TEdit;
     LValue: TLabel;
     procedure ExecutarClick(Sender: TObject);
+    procedure MetodoChange(Sender: TObject);
   private
     Produto: TDictionary<Integer,TProduto>;
 
@@ -127,15 +128,14 @@ begin
   try
     vJson := TJSONObject.ParseJSONValue(Body.Text) as TJSONObject;
     vID := StrToInt(vJson.GetValue('id').Value);
-    prResponse := prResponse + '{' + sLineBreak;
-    prResponse := prResponse + '  "ID": ' + IntToStr(StrToInt(vJson.GetValue('id').Value)) + ',' + sLineBreak;
-    prResponse := prResponse + '  "nome": "' + Produto.Items[StrToInt(vJson.GetValue('id').Value)].Nome + '",' + sLineBreak;
-    prResponse := prResponse + '  "valor": "' + CurrToStr(Produto.Items[StrToInt(vJson.GetValue('id').Value)].Valor) + '",' + sLineBreak;
-    prResponse := prResponse + '  "mensagem": "Produto deletado com sucesso"' + sLineBreak;
-    prResponse := prResponse + '}' + sLineBreak;
+    prResponse := '{' + sLineBreak +
+                  '  "ID": ' + IntToStr(StrToInt(vJson.GetValue('id').Value)) + ',' + sLineBreak +
+                  '  "nome": "' + Produto.Items[StrToInt(vJson.GetValue('id').Value)].Nome + '",' + sLineBreak +
+                  '  "valor": "' + CurrToStr(Produto.Items[StrToInt(vJson.GetValue('id').Value)].Valor) + '",' + sLineBreak +
+                  '}' + sLineBreak;
     Produto.Remove(StrToInt(vJson.GetValue('id').Value));
   except
-    if (not Produto.ContainsKey(vID)) and (vID <> 0) then
+    if (not Produto.ContainsKey(vID)) and (Assigned(vJson)) then
       ResponseNotFound('Produto não encontrado.')
     else
       ResponseBadRequest();
@@ -222,11 +222,11 @@ function TForm1.GetJsonBadRequest: String;
 var
   vResult: String;
 begin
-  vResult := '{' + sLineBreak;
-  vResult := vResult + '  "status": 400,' + sLineBreak;
-  vResult := vResult + '  "code": "JsonInvalido",' + sLineBreak;
-  vResult := vResult + '  "mensagem": "Json inválido para o processo desejado."' + sLineBreak;
-  vResult := vResult + '}';
+  vResult := '{' + sLineBreak +
+             '  "status": 400,' + sLineBreak +
+             '  "code": "JsonInvalido",' + sLineBreak +
+             '  "mensagem": "Json inválido para o processo desejado."' + sLineBreak +
+             '}';
 
   Result := vResult;
 end;
@@ -235,11 +235,11 @@ function TForm1.GetJsonMethodNotAllowed: String;
 var
   vResult: String;
 begin
-  vResult := '{' + sLineBreak;
-  vResult := vResult + '  "status": 405,' + sLineBreak;
-  vResult := vResult + '  "code": "MetodoNaoSuportado",' + sLineBreak;
-  vResult := vResult + '  "mensagem": "Método não suportado."' + sLineBreak;
-  vResult := vResult + '}';
+  vResult := '{' + sLineBreak +
+             '  "status": 405,' + sLineBreak +
+             '  "code": "MetodoNaoSuportado",' + sLineBreak +
+             '  "mensagem": "Método não suportado."' + sLineBreak +
+             '}';
 
   Result := vResult;
 end;
@@ -248,11 +248,11 @@ function TForm1.GetJsonNotFound(const prMensagem: String): String;
 var
   vResult: String;
 begin
-  vResult := '{' + sLineBreak;
-  vResult := vResult + '  "status": 404,' + sLineBreak;
-  vResult := vResult + '  "code": "NaoEncontrado",' + sLineBreak;
-  vResult := vResult + '  "mensagem": "' + prMensagem + '"' + sLineBreak;
-  vResult := vResult + '}';
+  vResult := '{' + sLineBreak +
+             '  "status": 404,' + sLineBreak +
+             '  "code": "NaoEncontrado",' + sLineBreak +
+             '  "mensagem": "' + prMensagem + '"' + sLineBreak +
+             '}';
 
   Result := vResult;
 end;
@@ -270,10 +270,10 @@ begin
     for vKey in Produto.Keys do
     begin
       Inc(vCount);
-      vResult := vResult + '  {' + sLineBreak;
-      vResult := vResult + '    "ID": ' + IntTOStr(vKey) + ',' + sLineBreak;
-      vResult := vResult + '    "nome": "' + Produto.Items[vKey].Nome + '",' + sLineBreak;
-      vResult := vResult + '    "valor": "' + CurrToStr(Produto.Items[vKey].Valor) + '"' + sLineBreak;
+      vResult := vResult + '  {' + sLineBreak +
+                           '    "ID": ' + IntTOStr(vKey) + ',' + sLineBreak +
+                           '    "nome": "' + Produto.Items[vKey].Nome + '",' + sLineBreak +
+                           '    "valor": "' + CurrToStr(Produto.Items[vKey].Valor) + '"' + sLineBreak;
       if Produto.Count = vCount then
         vResult := vResult + '  }' + sLineBreak
       else
@@ -283,11 +283,11 @@ begin
   end
   else
   begin
-    vResult := vResult + '{' + sLineBreak;
-    vResult := vResult + '  "ID": ' + IntToStr(prID) + ',' + sLineBreak;
-    vResult := vResult + '  "nome": "' + Produto.Items[prID].Nome + '",' + sLineBreak;
-    vResult := vResult + '  "valor": "' + CurrToStr(Produto.Items[prID].Valor) + '"' + sLineBreak;
-    vResult := vResult + '}' + sLineBreak
+    vResult := vResult + '{' + sLineBreak +
+                         '  "ID": ' + IntToStr(prID) + ',' + sLineBreak +
+                         '  "nome": "' + Produto.Items[prID].Nome + '",' + sLineBreak +
+                         '  "valor": "' + CurrToStr(Produto.Items[prID].Valor) + '"' + sLineBreak +
+                         '}' + sLineBreak
   end;
 
   Result := vResult;
@@ -297,11 +297,11 @@ function TForm1.GetJsonUnauthorized: String;
 var
   vResult: String;
 begin
-  vResult := '{' + sLineBreak;
-  vResult := vResult + '  "status": 401,' + sLineBreak;
-  vResult := vResult + '  "code": "NaoAutorizado",' + sLineBreak;
-  vResult := vResult + '  "mensagem": "Token não encontrado ou inválido."' + sLineBreak;
-  vResult := vResult + '}';
+  vResult := '{' + sLineBreak +
+             '  "status": 401,' + sLineBreak +
+             '  "code": "NaoAutorizado",' + sLineBreak +
+             '  "mensagem": "Token não encontrado ou inválido."' + sLineBreak +
+             '}';
 
   Result := vResult;
 end;
@@ -345,23 +345,45 @@ begin
   Result := vResult;   
 end;
 
+procedure TForm1.MetodoChange(Sender: TObject);
+var
+  vBody: String;
+begin
+  if Metodo.Text = 'POST' then
+  begin
+    vBody := '{' + sLineBreak +
+             '  "nome": "nome", ' + sLineBreak +
+             '  "valor": "0,00" ' + sLineBreak +
+             '}';
+    Body.Text := vBody;
+  end
+  else
+  if Metodo.Text = 'DELETE' then
+  begin
+    vBody := '{' + sLineBreak +
+             '  "id": 0 ' + sLineBreak +
+             '}';
+    Body.Text := vBody;
+  end;
+end;
+
 procedure TForm1.RequestExecute;
 var
   vRequest: String;
 begin
-  vRequest := Metodo.Text + ' ' + GetEndPoint + ' HTTP/1.1' + sLineBreak;
-  vRequest := vRequest + 'User-Agent: Simulador HTTP 1.0' + sLineBreak;
-  vRequest := vRequest + 'Simulador-Token: ' + GetHash + sLineBreak;
-  vRequest := vRequest + 'Accept-Encoding: gzip, deflate, br' + sLineBreak;
-  vRequest := vRequest + 'Connection: keep-alive' + sLineBreak;
-  vRequest := vRequest + 'Host: ' + GetHost + sLineBreak;
+  vRequest := Metodo.Text + ' ' + GetEndPoint + ' HTTP/1.1' + sLineBreak +
+              'User-Agent: Simulador HTTP 1.0' + sLineBreak +
+              'Simulador-Token: ' + GetHash + sLineBreak +
+              'Accept-Encoding: gzip, deflate, br' + sLineBreak +
+              'Connection: keep-alive' + sLineBreak +
+              'Host: ' + GetHost + sLineBreak;
   if (Key.Text <> '') and (Value.Text <> '')then
     vRequest := vRequest + Key.Text + ': ' + Value.Text + sLineBreak;
   if Body.Text <> '' then
   begin
-    vRequest := vRequest + 'Content-Type: application/json; charset=utf-8' + sLineBreak;
-    vRequest := vRequest + 'Content-Length: ' + IntToStr(Length(StringReplace(Body.Text,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak;
-    vRequest := vRequest + Body.Text;
+    vRequest := vRequest + 'Content-Type: application/json; charset=utf-8' + sLineBreak +
+                           'Content-Length: ' + IntToStr(Length(StringReplace(Body.Text,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak +
+                            Body.Text;
   end;
 
   Request.Text := vRequest;
@@ -374,14 +396,14 @@ var
 begin
   vJson := GetJsonBadRequest();;
 
-  vResponse := vResponse + 'HTTP/1.1 400 Bad Request' + sLineBreak;
-  vResponse := vResponse + 'Date: ' + GetUTC(Now) + sLineBreak;
-  vResponse := vResponse + 'Content-Type: application/json; charset=utf-8' + sLineBreak;
-  vResponse := vResponse + 'Content-Length: ' +IntToStr(Length(StringReplace(vJson,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak;
-  vResponse := vResponse + 'Connection: keep-alive' + sLineBreak;
-  vResponse := vResponse + 'Vary: Accept-Encoding' + sLineBreak;
-  vResponse := vResponse + 'Content-Encoding: br' + sLineBreak;
-  vResponse := vResponse + sLineBreak + vJson;
+  vResponse := vResponse + 'HTTP/1.1 400 Bad Request' + sLineBreak +
+                           'Date: ' + GetUTC(Now) + sLineBreak +
+                           'Content-Type: application/json; charset=utf-8' + sLineBreak +
+                           'Content-Length: ' +IntToStr(Length(StringReplace(vJson,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak +
+                           'Connection: keep-alive' + sLineBreak +
+                           'Vary: Accept-Encoding' + sLineBreak +
+                           'Content-Encoding: br' + sLineBreak +
+                           sLineBreak + vJson;
 
   Response.Text := vResponse;
 end;
@@ -400,14 +422,14 @@ begin
   begin
     vJson := GetJsonProduto(0);
 
-    vResponse := vResponse + 'HTTP/1.1 200 OK' + sLineBreak;
-    vResponse := vResponse + 'Date: ' + GetUTC(Now) + sLineBreak;
-    vResponse := vResponse + 'Content-Type: application/json; charset=utf-8' + sLineBreak;
-    vResponse := vResponse + 'Content-Length: ' + IntToStr(Length(StringReplace(vJson,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak;
-    vResponse := vResponse + 'Connection: keep-alive' + sLineBreak;
-    vResponse := vResponse + 'Vary: Accept-Encoding' + sLineBreak;
-    vResponse := vResponse + 'Content-Encoding: br' + sLineBreak;
-    vResponse := vResponse + sLineBreak + vJson;
+    vResponse := vResponse + 'HTTP/1.1 200 OK' + sLineBreak +
+                             'Date: ' + GetUTC(Now) + sLineBreak +
+                             'Content-Type: application/json; charset=utf-8' + sLineBreak +
+                             'Content-Length: ' + IntToStr(Length(StringReplace(vJson,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak +
+                             'Connection: keep-alive' + sLineBreak +
+                             'Vary: Accept-Encoding' + sLineBreak +
+                             'Content-Encoding: br' + sLineBreak +
+                             sLineBreak + vJson;
   end
   else
   if Metodo.Text = 'POST' then
@@ -418,14 +440,14 @@ begin
     begin
       vJson := GetJsonProduto(Produto.Count);
 
-      vResponse := vResponse + 'HTTP/1.1 200 OK' + sLineBreak;
-      vResponse := vResponse + 'Date: ' + GetUTC(Now) + sLineBreak;
-      vResponse := vResponse + 'Content-Type: application/json; charset=utf-8' + sLineBreak;
-      vResponse := vResponse + 'Content-Length: ' + IntToStr(Length(StringReplace(vJson,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak;
-      vResponse := vResponse + 'Connection: keep-alive' + sLineBreak;
-      vResponse := vResponse + 'Vary: Accept-Encoding' + sLineBreak;
-      vResponse := vResponse + 'Content-Encoding: br' + sLineBreak;
-      vResponse := vResponse + sLineBreak + vJson;
+      vResponse := vResponse + 'HTTP/1.1 200 OK' + sLineBreak +
+                               'Date: ' + GetUTC(Now) + sLineBreak +
+                               'Content-Type: application/json; charset=utf-8' + sLineBreak;
+                               'Content-Length: ' + IntToStr(Length(StringReplace(vJson,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak +
+                               'Connection: keep-alive' + sLineBreak +
+                               'Vary: Accept-Encoding' + sLineBreak +
+                               'Content-Encoding: br' + sLineBreak +
+                               sLineBreak + vJson;
     end;
   end
   else
@@ -435,27 +457,27 @@ begin
 
     if Response.Text = '' then
     begin
-      vResponse := vResponse + 'HTTP/1.1 200 OK' + sLineBreak;
-      vResponse := vResponse + 'Date: ' + GetUTC(Now) + sLineBreak;
-      vResponse := vResponse + 'Content-Type: application/json; charset=utf-8' + sLineBreak;
-      vResponse := vResponse + 'Content-Length: ' + IntToStr(Length(StringReplace(vJson,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak;
-      vResponse := vResponse + 'Connection: keep-alive' + sLineBreak;
-      vResponse := vResponse + 'Vary: Accept-Encoding' + sLineBreak;
-      vResponse := vResponse + 'Content-Encoding: br' + sLineBreak;
-      vResponse := vResponse + sLineBreak + vJson;
+      vResponse := vResponse + 'HTTP/1.1 200 OK' + sLineBreak +
+                               'Date: ' + GetUTC(Now) + sLineBreak +
+                               'Content-Type: application/json; charset=utf-8' + sLineBreak +
+                               'Content-Length: ' + IntToStr(Length(StringReplace(vJson,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak +
+                               'Connection: keep-alive' + sLineBreak +
+                               'Vary: Accept-Encoding' + sLineBreak +
+                               'Content-Encoding: br' + sLineBreak +
+                               sLineBreak + vJson;
     end;
   end
   else
   begin
     vJson := GetJsonMethodNotAllowed();
-    vResponse := vResponse + 'HTTP/1.1 405 Method Not Allowed' + sLineBreak;
-    vResponse := vResponse + 'Date: ' + GetUTC(Now) + sLineBreak;
-    vResponse := vResponse + 'Content-Type: application/json; charset=utf-8' + sLineBreak;
-    vResponse := vResponse + 'Content-Length: ' + IntToStr(Length(StringReplace(vJson,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak;
-    vResponse := vResponse + 'Connection: keep-alive' + sLineBreak;
-    vResponse := vResponse + 'Vary: Accept-Encoding' + sLineBreak;
-    vResponse := vResponse + 'Content-Encoding: br' + sLineBreak;
-    vResponse := vResponse + sLineBreak + vJson;
+    vResponse := vResponse + 'HTTP/1.1 405 Method Not Allowed' + sLineBreak +
+                             'Date: ' + GetUTC(Now) + sLineBreak +
+                             'Content-Type: application/json; charset=utf-8' + sLineBreak +
+                             'Content-Length: ' + IntToStr(Length(StringReplace(vJson,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak +
+                             'Connection: keep-alive' + sLineBreak +
+                             'Vary: Accept-Encoding' + sLineBreak +
+                             'Content-Encoding: br' + sLineBreak +
+                             sLineBreak + vJson;
   end;
 
   if vResponse <> '' then
@@ -469,14 +491,14 @@ var
 begin
   vJson := GetJsonNotFound(prMensagem);
 
-  vResponse := vResponse + 'HTTP/1.1 404 Not Found' + sLineBreak;
-  vResponse := vResponse + 'Date: ' + GetUTC(Now) + sLineBreak;
-  vResponse := vResponse + 'Content-Type: application/json; charset=utf-8' + sLineBreak;
-  vResponse := vResponse + 'Content-Length: ' + IntToStr(Length(StringReplace(vJson,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak;
-  vResponse := vResponse + 'Connection: keep-alive' + sLineBreak;
-  vResponse := vResponse + 'Vary: Accept-Encoding' + sLineBreak;
-  vResponse := vResponse + 'Content-Encoding: br' + sLineBreak;
-  vResponse := vResponse + sLineBreak + vJson;
+  vResponse := vResponse + 'HTTP/1.1 404 Not Found' + sLineBreak +
+                           'Date: ' + GetUTC(Now) + sLineBreak +
+                           'Content-Type: application/json; charset=utf-8' + sLineBreak +
+                           'Content-Length: ' + IntToStr(Length(StringReplace(vJson,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak +
+                           'Connection: keep-alive' + sLineBreak +
+                           'Vary: Accept-Encoding' + sLineBreak +
+                           'Content-Encoding: br' + sLineBreak +
+                           sLineBreak + vJson;
 
   Response.Text := vResponse;
 end;
@@ -488,14 +510,14 @@ var
 begin
   vJson := GetJsonUnauthorized();
 
-  vResponse := vResponse + 'HTTP/1.1 401 Unauthorized' + sLineBreak;
-  vResponse := vResponse + 'Date: ' + GetUTC(Now) + sLineBreak;
-  vResponse := vResponse + 'Content-Type: application/json; charset=utf-8' + sLineBreak;
-  vResponse := vResponse + 'Content-Length: ' + IntToStr(Length(StringReplace(vJson,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak;
-  vResponse := vResponse + 'Connection: keep-alive' + sLineBreak;
-  vResponse := vResponse + 'Vary: Accept-Encoding' + sLineBreak;
-  vResponse := vResponse + 'Content-Encoding: br' + sLineBreak;
-  vResponse := vResponse + sLineBreak + vJson;
+  vResponse := vResponse + 'HTTP/1.1 401 Unauthorized' + sLineBreak +
+                           'Date: ' + GetUTC(Now) + sLineBreak +
+                           'Content-Type: application/json; charset=utf-8' + sLineBreak +
+                           'Content-Length: ' + IntToStr(Length(StringReplace(vJson,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak +
+                           'Connection: keep-alive' + sLineBreak +
+                           'Vary: Accept-Encoding' + sLineBreak +
+                           'Content-Encoding: br' + sLineBreak +
+                           sLineBreak + vJson;
 
   Response.Text := vResponse;
 end;

@@ -130,6 +130,7 @@ object Form1: TForm1
     Font.Style = []
     ParentFont = False
     TabOrder = 0
+    OnChange = MetodoChange
   end
   object URL: TEdit
     Left = 63
@@ -169,12 +170,12 @@ object Form1: TForm1
   end
   object Request: TMemo
     Left = 8
-    Top = 275
+    Top = 278
     Width = 313
     Height = 198
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -13
+    Font.Height = -11
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
@@ -189,7 +190,7 @@ object Form1: TForm1
     Height = 198
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -13
+    Font.Height = -11
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
