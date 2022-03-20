@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <BorlandProject>
-  <Transactions>
-    <Transaction>2022/03/18 22:17:25.027,=C:\Users\yancl\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
-    <Transaction>2022/03/18 22:17:37.512,C:\Users\yancl\Documents\GitHub\SimuladorHTTP\Unit1.pas=C:\Users\yancl\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
-    <Transaction>2022/03/18 22:17:37.512,C:\Users\yancl\Documents\GitHub\SimuladorHTTP\Unit1.dfm=C:\Users\yancl\Documents\Embarcadero\Studio\Projects\Unit1.dfm</Transaction>
-    <Transaction>2022/03/18 22:17:40.140,C:\Users\yancl\Documents\GitHub\SimuladorHTTP\Project1.dproj=C:\Users\yancl\Documents\Embarcadero\Studio\Projects\Project1.dproj</Transaction>
-    <Transaction>2022/03/18 22:20:19.184,C:\Users\yancl\Documents\GitHub\SimuladorHTTP\uFormSimuladorHTTP.dfm=C:\Users\yancl\Documents\GitHub\SimuladorHTTP\Unit1.dfm</Transaction>
-    <Transaction>2022/03/18 22:20:19.184,C:\Users\yancl\Documents\GitHub\SimuladorHTTP\uFormSimuladorHTTP.pas=C:\Users\yancl\Documents\GitHub\SimuladorHTTP\Unit1.pas</Transaction>
-    <Transaction>2022/03/18 22:20:46.194,C:\Users\yancl\Documents\GitHub\SimuladorHTTP\SimuladorHTTP.dproj=C:\Users\yancl\Documents\GitHub\SimuladorHTTP\Project1.dproj</Transaction>
+	<Transactions>
+    <Transaction>2022/03/18 22:17:25.000.027,=C:\Users\yancl\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2022/03/18 22:17:37.000.512,C:\Users\yancl\Documents\Embarcadero\Studio\Projects\Unit1.pas=C:\Users\yancl\Documents\GitHub\SimuladorHTTP\Unit1.pas</Transaction>
+    <Transaction>2022/03/18 22:17:37.000.512,C:\Users\yancl\Documents\Embarcadero\Studio\Projects\Unit1.dfm=C:\Users\yancl\Documents\GitHub\SimuladorHTTP\Unit1.dfm</Transaction>
+    <Transaction>2022/03/18 22:17:40.000.140,C:\Users\yancl\Documents\Embarcadero\Studio\Projects\Project1.dproj=C:\Users\yancl\Documents\GitHub\SimuladorHTTP\Project1.dproj</Transaction>
+    <Transaction>2022/03/18 22:20:19.000.184,C:\Users\yancl\Documents\GitHub\SimuladorHTTP\Unit1.dfm=C:\Users\yancl\Documents\GitHub\SimuladorHTTP\uFormSimuladorHTTP.dfm</Transaction>
+    <Transaction>2022/03/18 22:20:19.000.184,C:\Users\yancl\Documents\GitHub\SimuladorHTTP\Unit1.pas=C:\Users\yancl\Documents\GitHub\SimuladorHTTP\uFormSimuladorHTTP.pas</Transaction>
+    <Transaction>2022/03/18 22:20:46.000.194,C:\Users\yancl\Documents\GitHub\SimuladorHTTP\Project1.dproj=C:\Users\yancl\Documents\GitHub\SimuladorHTTP\SimuladorHTTP.dproj</Transaction>
   </Transactions>
 </BorlandProject>

@@ -442,7 +442,7 @@ begin
 
       vResponse := vResponse + 'HTTP/1.1 200 OK' + sLineBreak +
                                'Date: ' + GetUTC(Now) + sLineBreak +
-                               'Content-Type: application/json; charset=utf-8' + sLineBreak;
+                               'Content-Type: application/json; charset=utf-8' + sLineBreak +
                                'Content-Length: ' + IntToStr(Length(StringReplace(vJson,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak +
                                'Connection: keep-alive' + sLineBreak +
                                'Vary: Accept-Encoding' + sLineBreak +
