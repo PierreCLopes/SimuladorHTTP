@@ -1,8 +1,8 @@
-object Form1: TForm1
+object FormPrincipal: TFormPrincipal
   Left = 293
   Top = 110
-  Caption = 'Form1'
-  ClientHeight = 509
+  Caption = 'FormPrincipal'
+  ClientHeight = 518
   ClientWidth = 684
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -10,8 +10,9 @@ object Form1: TForm1
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
+  Menu = MainMenu
   OldCreateOrder = False
-  Position = poDesigned
+  Position = poScreenCenter
   PixelsPerInch = 96
   TextHeight = 13
   object LMetodo: TLabel
@@ -42,7 +43,7 @@ object Form1: TForm1
   end
   object LBody: TLabel
     Left = 8
-    Top = 126
+    Top = 142
     Width = 27
     Height = 16
     Caption = 'Body'
@@ -55,7 +56,7 @@ object Form1: TForm1
   end
   object LRequest: TLabel
     Left = 8
-    Top = 256
+    Top = 264
     Width = 46
     Height = 16
     Caption = 'Request'
@@ -67,8 +68,8 @@ object Form1: TForm1
     ParentFont = False
   end
   object LResponse: TLabel
-    Left = 327
-    Top = 256
+    Left = 346
+    Top = 264
     Width = 55
     Height = 16
     Caption = 'Response'
@@ -80,7 +81,7 @@ object Form1: TForm1
     ParentFont = False
   end
   object LHeader: TLabel
-    Left = 298
+    Left = 306
     Top = 57
     Width = 61
     Height = 23
@@ -94,7 +95,7 @@ object Form1: TForm1
   end
   object LKey: TLabel
     Left = 8
-    Top = 80
+    Top = 86
     Width = 20
     Height = 16
     Caption = 'Key'
@@ -106,8 +107,8 @@ object Form1: TForm1
     ParentFont = False
   end
   object LValue: TLabel
-    Left = 327
-    Top = 80
+    Left = 346
+    Top = 86
     Width = 32
     Height = 16
     Caption = 'Value'
@@ -147,7 +148,7 @@ object Form1: TForm1
   end
   object Executar: TButton
     Left = 598
-    Top = 479
+    Top = 487
     Width = 75
     Height = 25
     Caption = 'Executar'
@@ -156,7 +157,7 @@ object Form1: TForm1
   end
   object Body: TMemo
     Left = 8
-    Top = 145
+    Top = 161
     Width = 665
     Height = 89
     Font.Charset = DEFAULT_CHARSET
@@ -170,8 +171,8 @@ object Form1: TForm1
   end
   object Request: TMemo
     Left = 8
-    Top = 278
-    Width = 313
+    Top = 283
+    Width = 332
     Height = 198
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -184,9 +185,9 @@ object Form1: TForm1
     TabOrder = 4
   end
   object Response: TMemo
-    Left = 327
-    Top = 275
-    Width = 346
+    Left = 344
+    Top = 283
+    Width = 332
     Height = 198
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -202,8 +203,8 @@ object Form1: TForm1
   end
   object Key: TEdit
     Left = 8
-    Top = 99
-    Width = 313
+    Top = 105
+    Width = 332
     Height = 24
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -214,9 +215,9 @@ object Form1: TForm1
     TabOrder = 6
   end
   object Value: TEdit
-    Left = 327
-    Top = 99
-    Width = 346
+    Left = 344
+    Top = 105
+    Width = 329
     Height = 24
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -225,5 +226,24 @@ object Form1: TForm1
     Font.Style = []
     ParentFont = False
     TabOrder = 7
+  end
+  object MainMenu: TMainMenu
+    Left = 656
+    Top = 65520
+    object Instrues1: TMenuItem
+      Caption = 'Menu'
+      object Protocolo1: TMenuItem
+        Caption = 'Protocolo'
+        OnClick = Protocolo1Click
+      end
+      object Instrues2: TMenuItem
+        Caption = 'Instru'#231#245'es'
+        OnClick = Instrues2Click
+      end
+      object Instruessimplificadas1: TMenuItem
+        Caption = 'Instru'#231#245'es simplificadas'
+        OnClick = Instruessimplificadas1Click
+      end
+    end
   end
 end

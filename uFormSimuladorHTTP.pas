@@ -3,9 +3,9 @@ unit uFormSimuladorHTTP;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, ShellAPI,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Generics.Collections, System.DateUtils, StrUtils,
-  System.JSON, IdHashMessageDigest;
+  System.JSON, IdHashMessageDigest, Vcl.Menus;
 
 type
   TProduto = record
@@ -15,11 +15,12 @@ type
 
   Constante = record
     Const
-      URL = 'https://api.com/produto';
-      Host = 'https://api.com';
+      URL = 'https://www.api.com/produto';
+      Host = 'https://www.api.com';
+      URLHttp = 'http://www.api.com/produto';
   end;
 
-  TForm1 = class(TForm)
+  TFormPrincipal = class(TForm)
     Metodo: TComboBox;
     LMetodo: TLabel;
     URL: TEdit;
@@ -36,8 +37,16 @@ type
     LKey: TLabel;
     Value: TEdit;
     LValue: TLabel;
+    MainMenu: TMainMenu;
+    Instrues1: TMenuItem;
+    Protocolo1: TMenuItem;
+    Instrues2: TMenuItem;
+    Instruessimplificadas1: TMenuItem;
     procedure ExecutarClick(Sender: TObject);
     procedure MetodoChange(Sender: TObject);
+    procedure Instrues2Click(Sender: TObject);
+    procedure Protocolo1Click(Sender: TObject);
+    procedure Instruessimplificadas1Click(Sender: TObject);
   private
     Produto: TDictionary<Integer,TProduto>;
 
@@ -59,12 +68,13 @@ type
     procedure ResponseNotFound(const prMensagem: String);
     procedure ResponseUnauthorized;
     procedure ResponseError;
+    procedure PopUp(prTexto, prCaption: String);
   public
     constructor Create(AOwner: TComponent); override;
   end;
 
 var
-  Form1: TForm1;
+  FormPrincipal: TFormPrincipal;
 
 implementation
 
@@ -72,7 +82,7 @@ implementation
 
 { TForm1 }
 
-procedure TForm1.CadastrarProduto;
+procedure TFormPrincipal.CadastrarProduto;
 var
   vJson: TJSONObject;
   vKey: Integer;
@@ -81,7 +91,7 @@ var
 begin
   vID := 0;
   try
-    vJson := TJSONObject.ParseJSONValue( Body.Text) as TJSONObject;
+    vJson := TJSONObject.ParseJSONValue(Body.Text) as TJSONObject;
 
     for vKey in Produto.Keys do
       if vKey > vID then
@@ -95,7 +105,7 @@ begin
   end;
 end;
 
-constructor TForm1.Create(AOwner: TComponent);
+constructor TFormPrincipal.Create(AOwner: TComponent);
 var
   vProduto: TProduto;
 begin
@@ -119,12 +129,13 @@ begin
   URL.Text := Constante.URL;
 end;
 
-procedure TForm1.DeletarProduto(var prResponse: String);
+procedure TFormPrincipal.DeletarProduto(var prResponse: String);
 var
   vJson: TJSONObject;
   vID: Integer;
 begin
   vID := 0;
+  vJson := nil;
   try
     vJson := TJSONObject.ParseJSONValue(Body.Text) as TJSONObject;
     vID := StrToInt(vJson.GetValue('id').Value);
@@ -135,14 +146,14 @@ begin
                   '}' + sLineBreak;
     Produto.Remove(StrToInt(vJson.GetValue('id').Value));
   except
-    if (not Produto.ContainsKey(vID)) and (Assigned(vJson)) then
+    if (not Produto.ContainsKey(vID)) and (vJson <> nil) then
       ResponseNotFound('Produto não encontrado.')
     else
       ResponseBadRequest();
   end;
 end;
 
-procedure TForm1.ExecutarClick(Sender: TObject);
+procedure TFormPrincipal.ExecutarClick(Sender: TObject);
 begin
   if URL.Text = '' then
   begin
@@ -160,7 +171,7 @@ begin
     Response.Clear;
     Request.Clear;
 
-    if URL.Text = Constante.URL then
+    if (URL.Text = Constante.URL) or (URL.Text = Constante.URLHttp) then
     begin
       RequestExecute;
       if (UpperCase(Key.Text) = 'TOKEN') and (Value.Text = '123456789') then
@@ -183,7 +194,7 @@ begin
 
 end;
 
-function TForm1.GetEndPoint: String;
+function TFormPrincipal.GetEndPoint: String;
 var
   vResult: String;
 begin
@@ -196,7 +207,7 @@ begin
   Result := vResult;
 end;
 
-function TForm1.GetHash: String;
+function TFormPrincipal.GetHash: String;
 var
   vHash: TIdHashMessageDigest5;
 begin
@@ -204,7 +215,7 @@ begin
   Result := vHash.HashStringAsHex('Simulador HTTP');
 end;
 
-function TForm1.GetHost: String;
+function TFormPrincipal.GetHost: String;
 var
   vResult: String;
 begin
@@ -218,46 +229,46 @@ begin
   Result := vResult;
 end;
 
-function TForm1.GetJsonBadRequest: String;
+function TFormPrincipal.GetJsonBadRequest: String;
 var
   vResult: String;
 begin
-  vResult := '{' + sLineBreak +
-             '  "status": 400,' + sLineBreak +
-             '  "code": "JsonInvalido",' + sLineBreak +
-             '  "mensagem": "Json inválido para o processo desejado."' + sLineBreak +
-             '}';
+  vResult := sLineBreak + '{' + sLineBreak +
+                           '  "status": 400,' + sLineBreak +
+                           '  "code": "JsonInvalido",' + sLineBreak +
+                           '  "mensagem": "Json inválido para o processo desejado."' + sLineBreak +
+                           '}';
 
   Result := vResult;
 end;
 
-function TForm1.GetJsonMethodNotAllowed: String;
+function TFormPrincipal.GetJsonMethodNotAllowed: String;
 var
   vResult: String;
 begin
-  vResult := '{' + sLineBreak +
-             '  "status": 405,' + sLineBreak +
-             '  "code": "MetodoNaoSuportado",' + sLineBreak +
-             '  "mensagem": "Método não suportado."' + sLineBreak +
-             '}';
+  vResult := sLineBreak + '{' + sLineBreak +
+                           '  "status": 405,' + sLineBreak +
+                           '  "code": "MetodoNaoSuportado",' + sLineBreak +
+                           '  "mensagem": "Método não suportado."' + sLineBreak +
+                           '}';
 
   Result := vResult;
 end;
 
-function TForm1.GetJsonNotFound(const prMensagem: String): String;
+function TFormPrincipal.GetJsonNotFound(const prMensagem: String): String;
 var
   vResult: String;
 begin
-  vResult := '{' + sLineBreak +
-             '  "status": 404,' + sLineBreak +
-             '  "code": "NaoEncontrado",' + sLineBreak +
-             '  "mensagem": "' + prMensagem + '"' + sLineBreak +
-             '}';
+  vResult := sLineBreak + '{' + sLineBreak +
+                           '  "status": 404,' + sLineBreak +
+                           '  "code": "NaoEncontrado",' + sLineBreak +
+                           '  "mensagem": "' + prMensagem + '"' + sLineBreak +
+                           '}';
 
   Result := vResult;
 end;
 
-function TForm1.GetJsonProduto(prID: Integer): String;
+function TFormPrincipal.GetJsonProduto(prID: Integer): String;
 var
   vKey: Integer;
   vCount: Integer;
@@ -266,7 +277,7 @@ begin
   vCount := 0;
   if prID = 0 then
   begin
-    vResult := '[' + sLineBreak;
+    vResult := sLineBreak + '[' + sLineBreak;
     for vKey in Produto.Keys do
     begin
       Inc(vCount);
@@ -283,30 +294,30 @@ begin
   end
   else
   begin
-    vResult := vResult + '{' + sLineBreak +
-                         '  "ID": ' + IntToStr(prID) + ',' + sLineBreak +
-                         '  "nome": "' + Produto.Items[prID].Nome + '",' + sLineBreak +
-                         '  "valor": "' + CurrToStr(Produto.Items[prID].Valor) + '"' + sLineBreak +
-                         '}' + sLineBreak
+    vResult := sLineBreak + vResult + '{' + sLineBreak +
+                                       '  "ID": ' + IntToStr(prID) + ',' + sLineBreak +
+                                       '  "nome": "' + Produto.Items[prID].Nome + '",' + sLineBreak +
+                                       '  "valor": "' + CurrToStr(Produto.Items[prID].Valor) + '"' + sLineBreak +
+                                       '}' + sLineBreak
   end;
 
   Result := vResult;
 end;
 
-function TForm1.GetJsonUnauthorized: String;
+function TFormPrincipal.GetJsonUnauthorized: String;
 var
   vResult: String;
 begin
-  vResult := '{' + sLineBreak +
-             '  "status": 401,' + sLineBreak +
-             '  "code": "NaoAutorizado",' + sLineBreak +
-             '  "mensagem": "Token não encontrado ou inválido."' + sLineBreak +
-             '}';
+  vResult := sLineBreak + '{' + sLineBreak +
+                           '  "status": 401,' + sLineBreak +
+                           '  "code": "NaoAutorizado",' + sLineBreak +
+                           '  "mensagem": "Token não encontrado ou inválido."' + sLineBreak +
+                           '}';
 
   Result := vResult;
 end;
 
-function TForm1.GetUTC(const prDate: TDateTime): String;
+function TFormPrincipal.GetUTC(const prDate: TDateTime): String;
 var
   vResult: String;     
 begin
@@ -345,7 +356,33 @@ begin
   Result := vResult;   
 end;
 
-procedure TForm1.MetodoChange(Sender: TObject);
+procedure TFormPrincipal.Instrues2Click(Sender: TObject);
+begin
+  ShellExecute(Handle,
+               'open',
+               'https://docs.google.com/document/d/1eHCmKfDalNb6D9JbsngYZvjKHkDOMZzFCOg-JhiaD50/edit?usp=sharing',
+               nil,
+               nil,
+               SW_SHOWMAXIMIZED);
+end;
+
+procedure TFormPrincipal.Instruessimplificadas1Click(Sender: TObject);
+begin
+  PopUp('O simulador possui a estrutura básica para realizar uma ' + sLineBreak +
+        'requisição na API, tendo a seleção do Método HTTP (GET, POST, DELETE).' + sLineBreak + sLineBreak +
+        'A URL que por padrão será suportado http://www.api.com.br/produto. ' + sLineBreak +
+        'Abaixo temos o Header, onde pode ser passado no cabeçalho da mensagem' + sLineBreak +
+        'HTTP uma Chave e um Valor dessa chave, por padrão a API irá obrigar um Token,' + sLineBreak +
+        'que já é sugerido automaticamente, com a Key “Token” e a Chave “123456789”, ' + sLineBreak +
+        'caso não seja informada, será retornado erro de autenticação pelo protocolo HTTP. ' + sLineBreak + sLineBreak +
+        'Abaixo temos o Body, onde pode ser informado o corpo da mensagem, ' + sLineBreak +
+        'de acordo com o método selecionado, será sugerido um formato de corpo para realizar a requisição. ' + sLineBreak + sLineBreak +
+        'Abaixo temos o Request e o Response realizado pelo protocolo HTTP, ' + sLineBreak +
+        'onde poderá ser visto todas as informações definidas anteriormente.',
+        'Instruções simplificadas');
+end;
+
+procedure TFormPrincipal.MetodoChange(Sender: TObject);
 var
   vBody: String;
 begin
@@ -367,7 +404,34 @@ begin
   end;
 end;
 
-procedure TForm1.RequestExecute;
+procedure TFormPrincipal.PopUp(prTexto, prCaption: String);
+begin
+  with CreateMessageDialog(prTexto, mtInformation, [mbOk]) do
+  try
+    Caption := prCaption;
+    ShowModal;
+  finally
+    Free;
+  end;
+end;
+
+procedure TFormPrincipal.Protocolo1Click(Sender: TObject);
+begin
+  PopUp('O que é o protocolo HTTP?' + sLineBreak  +
+        'HTTP – Protocolo de Transferência de Hipertexto (HyperText Transfer Protocol)' + sLineBreak +
+        'Este protocolo funciona através de um modelo computacional conhecido como ' + sLineBreak +
+        'cliente-servidor, onde um cliente estabelece a comunicação com um servidor ' + sLineBreak +
+        'e ambos passam a trocar informações entre si.' + sLineBreak + sLineBreak +
+        'Como funciona o HTTP?' + sLineBreak +
+        'Como dito acima, o protocolo utiliza uma estrutura de cliente-servidor, ' + sLineBreak +
+        'onde há uma comunicação com mensagens individuais. A mensagem enviada pelo ' + sLineBreak +
+        'cliente é chamada de solicitação (request), enquanto a mensagem enviada pelo ' + sLineBreak +
+        'servidor é chamada de resposta (response).',
+
+  'Protocolo HTTP');
+end;
+
+procedure TFormPrincipal.RequestExecute;
 var
   vRequest: String;
 begin
@@ -383,13 +447,13 @@ begin
   begin
     vRequest := vRequest + 'Content-Type: application/json; charset=utf-8' + sLineBreak +
                            'Content-Length: ' + IntToStr(Length(StringReplace(Body.Text,sLineBreak,'',[rfReplaceAll, rfIgnoreCase]))) + sLineBreak +
-                            Body.Text;
+                            sLineBreak + Body.Text;
   end;
 
   Request.Text := vRequest;
 end;
 
-procedure TForm1.ResponseBadRequest;
+procedure TFormPrincipal.ResponseBadRequest;
 var
   vResponse: String;
   vJson: String;
@@ -408,12 +472,12 @@ begin
   Response.Text := vResponse;
 end;
 
-procedure TForm1.ResponseError;
+procedure TFormPrincipal.ResponseError;
 begin
   Response.Text := 'Error: getaddrinfo ENOTFOUND ' + GetHost;
 end;
 
-procedure TForm1.ResponseExecute;
+procedure TFormPrincipal.ResponseExecute;
 var
   vResponse: String;
   vJson: String;
@@ -484,7 +548,7 @@ begin
     Response.Text := vResponse;
 end;
 
-procedure TForm1.ResponseNotFound(const prMensagem: String);
+procedure TFormPrincipal.ResponseNotFound(const prMensagem: String);
 var
   vResponse: String;
   vJson: String;
@@ -503,7 +567,7 @@ begin
   Response.Text := vResponse;
 end;
 
-procedure TForm1.ResponseUnauthorized;
+procedure TFormPrincipal.ResponseUnauthorized;
 var
   vResponse: String;
   vJson: String;
